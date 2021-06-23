@@ -1,0 +1,18 @@
+[package]
+name = "yate"
+description = "simple, idiomatic, combined html template engine and static site generator"
+version = "0.0.1"
+authors = ["stoically <stoically@protonmail.com>"]
+keywords = ["template-engine", "ssg", "html", "rsx", "macro"]
+edition = "2018"
+repository = "https://github.com/stoically/yate"
+readme = "README.md"
+license = "MIT"
+
+[dependencies]
+html-to-string-macro = { version = "0.1.0", path = "html-to-string-macro" }
+
+[workspace]
+members = [
+    "html-to-string-macro"
+]

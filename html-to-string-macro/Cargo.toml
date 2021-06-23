@@ -1,0 +1,19 @@
+[package]
+name = "html-to-string-macro"
+description = "simple html to string macro powered by syn-rsx"
+version = "0.1.0"
+authors = ["stoically <stoically@protonmail.com>"]
+keywords = ["html-to-string", "html", "macro"]
+edition = "2018"
+repository = "https://github.com/stoically/yate/tree/main/html-to-string-macro"
+readme = "README.md"
+license = "MIT"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1"
+quote = "1"
+syn = "1"
+syn-rsx = "0.8"
