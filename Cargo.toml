@@ -10,6 +10,7 @@ readme = "README.md"
 license = "MIT"
 
 [dependencies]
+html-escape = "0.2.9"
 html-to-string-macro = { version = "0.1", path = "html-to-string-macro" }
 
 [workspace]

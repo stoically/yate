@@ -9,7 +9,14 @@
 //! it very flexible and allows e.g. serving it with a webserver or write it as
 //! static content.
 //!
+//! Embedded Rust code in braced blocks inside the `html!` macro must return
+//! something that implements [`std::fmt::Display`]. More information about
+//! supported syntax can be found [here].
+//!
 //! # Example
+//!
+//! [here]: https://docs.rs/syn-rsx/latest/syn_rsx/#features
+//!
 //! ```
 //! # async {
 //! use yate::html;
@@ -35,6 +42,17 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(()) };
 //! ```
 //!
+//! # Html escaping
+//!
+//! There is syntax sugar available that passes string literals into
+//! [`html_escape::escape_text()`]. Works like this:
+//!
+//! ```
+//! let div = yate::html! { <div>{%= "<uwu>" %}</div> };
+//! assert_eq!(div, "<div>&lt;uwu&gt;</div>")
+//! ```
+//!
 //! [syn-rsx]: https://crates.io/crates/syn-rsx
 
+pub use html_escape;
 pub use html_to_string_macro::html;

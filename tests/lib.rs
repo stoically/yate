@@ -18,6 +18,7 @@ fn test() {
                         <div>"2"</div>
                         <div>"3"</div>
                         <div {"some-attribute-from-rust-block"}/>
+                        <div>{%= "<uwu>" %}</div>
                     </>
                 </body>
             </html>
@@ -35,6 +36,7 @@ fn test() {
                     <div>2</div>
                     <div>3</div>
                     <div some-attribute-from-rust-block></div>
+                    <div>&lt;uwu&gt;</div>
                 </body>
             </html>
         "#

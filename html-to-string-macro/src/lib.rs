@@ -1,7 +1,10 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::Expr;
-use syn_rsx::{parse, Node, NodeType};
+use syn::{
+    parse::{discouraged::Speculative, ParseBuffer},
+    Expr, ExprLit, Result, Token,
+};
+use syn_rsx::{parse_with_config, Node, NodeType, ParserConfig};
 
 fn walk_nodes(nodes: Vec<Node>, nodes_context: Option<NodeType>) -> (String, Vec<Expr>) {
     let mut out = String::new();
@@ -80,13 +83,26 @@ fn walk_nodes(nodes: Vec<Node>, nodes_context: Option<NodeType>) -> (String, Vec
 
 /// Converts HTML to `String`
 ///
-/// Embedded Rust code in braced blocks must return something that implements
-/// [`std::fmt::Display`]. More information about supported syntax can be found [here].
-///
-/// [here]: https://docs.rs/syn-rsx/latest/syn_rsx/#features
+/// This macro should only be used from the `yate` crate, not directly, as
+/// things will break otherwise.
 #[proc_macro]
 pub fn html(tokens: TokenStream) -> TokenStream {
-    match parse(tokens) {
+    match parse_with_config(
+        tokens,
+        ParserConfig::new().transform_block(|input| {
+            let fork = input.fork();
+            if let Ok(text) = parse_escape_syntax(&fork) {
+                input.advance_to(&fork);
+                if !input.is_empty() {
+                    return Err(input.error("escape syntax should end after the last %"));
+                }
+
+                Ok(Some(quote! { yate::html_escape::encode_text(#text) }))
+            } else {
+                Ok(None)
+            }
+        }),
+    ) {
         Ok(nodes) => {
             let (html_string, values) = walk_nodes(nodes, None);
             quote! { format!(#html_string, #(#values),*) }
@@ -94,4 +110,13 @@ pub fn html(tokens: TokenStream) -> TokenStream {
         Err(error) => error.to_compile_error(),
     }
     .into()
+}
+
+fn parse_escape_syntax(input: &ParseBuffer) -> Result<ExprLit> {
+    input.parse::<Token![%]>()?;
+    input.parse::<Token![=]>()?;
+    let text = input.parse::<ExprLit>()?;
+    input.parse::<Token![%]>()?;
+
+    Ok(text)
 }
