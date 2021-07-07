@@ -44,8 +44,8 @@
 //!
 //! # Html escaping
 //!
-//! There is syntax sugar available that passes string literals into
-//! [`html_escape::escape_text()`]. Works like this:
+//! There is syntax sugar available that passes expressions in braced blocks
+//! into `html_escape::escape_text()`. Works like this:
 //!
 //! ```
 //! let div = yate::html! { <div>{%= "<uwu>" %}</div> };

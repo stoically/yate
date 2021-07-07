@@ -1,8 +1,9 @@
 use proc_macro::TokenStream;
+use proc_macro2::TokenTree;
 use quote::quote;
 use syn::{
-    parse::{discouraged::Speculative, ParseBuffer},
-    Expr, ExprLit, Result, Token,
+    parse::{discouraged::Speculative, ParseBuffer, ParseStream, Parser as _},
+    Expr, Result, Token,
 };
 use syn_rsx::{parse_with_config, Node, NodeType, ParserConfig};
 
@@ -93,9 +94,6 @@ pub fn html(tokens: TokenStream) -> TokenStream {
             let fork = input.fork();
             if let Ok(text) = parse_escape_syntax(&fork) {
                 input.advance_to(&fork);
-                if !input.is_empty() {
-                    return Err(input.error("escape syntax should end after the last %"));
-                }
 
                 Ok(Some(quote! { yate::html_escape::encode_text(#text) }))
             } else {
@@ -112,11 +110,30 @@ pub fn html(tokens: TokenStream) -> TokenStream {
     .into()
 }
 
-fn parse_escape_syntax(input: &ParseBuffer) -> Result<ExprLit> {
+fn parse_escape_syntax(input: &ParseBuffer) -> Result<Expr> {
     input.parse::<Token![%]>()?;
     input.parse::<Token![=]>()?;
-    let text = input.parse::<ExprLit>()?;
-    input.parse::<Token![%]>()?;
 
-    Ok(text)
+    let mut tokens = proc_macro2::TokenStream::new();
+    loop {
+        if input.is_empty() {
+            return Err(input.error("unexpected end of escape syntax"));
+        }
+
+        let token = input.parse::<TokenTree>()?;
+        tokens.extend(Some(token));
+
+        if input.peek(Token![%]) {
+            input.parse::<Token![%]>()?;
+
+            if !input.is_empty() {
+                return Err(input.error("escape syntax should end after the last %"));
+            }
+
+            break;
+        }
+    }
+
+    let parser = move |input: ParseStream| -> Result<Expr> { input.parse::<Expr>() };
+    parser.parse2(tokens)
 }
