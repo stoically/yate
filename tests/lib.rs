@@ -17,6 +17,7 @@ fn test() {
                         <div>"1"</div>
                         <div>"2"</div>
                         <div>"3"</div>
+                        <div {"some-attribute-from-rust-block"}/>
                     </>
                 </body>
             </html>
@@ -33,10 +34,11 @@ fn test() {
                     <div>1</div>
                     <div>2</div>
                     <div>3</div>
+                    <div some-attribute-from-rust-block></div>
                 </body>
             </html>
         "#
-        .split("\n")
+        .split('\n')
         .map(|line| line.trim())
         .collect::<Vec<&str>>()
         .join("")

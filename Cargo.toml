@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 
 [dependencies]
-html-to-string-macro = { version = "0.1.0", path = "html-to-string-macro" }
+html-to-string-macro = { version = "0.1", path = "html-to-string-macro" }
 
 [workspace]
 members = [

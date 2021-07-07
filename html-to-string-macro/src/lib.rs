@@ -3,7 +3,7 @@ use quote::quote;
 use syn::Expr;
 use syn_rsx::{parse, Node, NodeType};
 
-fn walk_nodes(nodes: Vec<Node>) -> (String, Vec<Expr>) {
+fn walk_nodes(nodes: Vec<Node>, nodes_context: Option<NodeType>) -> (String, Vec<Expr>) {
     let mut out = String::new();
     let mut values = vec![];
 
@@ -14,7 +14,8 @@ fn walk_nodes(nodes: Vec<Node>) -> (String, Vec<Expr>) {
                 out.push_str(&format!("<{}", name));
 
                 // attributes
-                let (html_string, attribute_values) = walk_nodes(node.attributes);
+                let (html_string, attribute_values) =
+                    walk_nodes(node.attributes, Some(NodeType::Attribute));
                 out.push_str(&html_string);
                 values.extend(attribute_values);
                 out.push('>');
@@ -27,7 +28,8 @@ fn walk_nodes(nodes: Vec<Node>) -> (String, Vec<Expr>) {
                 }
 
                 // children
-                let (html_string, children_values) = walk_nodes(node.children);
+                let (html_string, children_values) =
+                    walk_nodes(node.children, Some(NodeType::Element));
                 out.push_str(&html_string);
                 values.extend(children_values);
 
@@ -44,11 +46,19 @@ fn walk_nodes(nodes: Vec<Node>) -> (String, Vec<Expr>) {
                 }
             }
             NodeType::Text | NodeType::Block => {
+                if let Some(nodes_context) = &nodes_context {
+                    // If the nodes context is attribute we prefix with whitespace
+                    if nodes_context == &NodeType::Attribute {
+                        out.push(' ');
+                    }
+                }
+
                 out.push_str("{}");
                 values.push(node.value.expect("unexpected missing node value"));
             }
             NodeType::Fragment => {
-                let (html_string, children_values) = walk_nodes(node.children);
+                let (html_string, children_values) =
+                    walk_nodes(node.children, Some(NodeType::Fragment));
                 out.push_str(&html_string);
                 values.extend(children_values);
             }
@@ -78,7 +88,7 @@ fn walk_nodes(nodes: Vec<Node>) -> (String, Vec<Expr>) {
 pub fn html(tokens: TokenStream) -> TokenStream {
     match parse(tokens) {
         Ok(nodes) => {
-            let (html_string, values) = walk_nodes(nodes);
+            let (html_string, values) = walk_nodes(nodes, None);
             quote! { format!(#html_string, #(#values),*) }
         }
         Err(error) => error.to_compile_error(),
