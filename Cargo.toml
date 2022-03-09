@@ -1,13 +1,16 @@
 [package]
 name = "yate"
 description = "simple, idiomatic, combined html template engine and static site generator"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["stoically <stoically@protonmail.com>"]
 keywords = ["template-engine", "ssg", "html", "rsx", "macro"]
 edition = "2018"
 repository = "https://github.com/stoically/yate"
 readme = "README.md"
 license = "MIT"
+
+[badges]
+maintenance = { status = "deprecated" }
 
 [dependencies]
 html-escape = "0.2.9"
